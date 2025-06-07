@@ -1,0 +1,17 @@
+
+def roll_dice():
+    print("Rolling two dice...")
+    import random
+
+    # Simulate rolling two dice
+    die1 = random.randint(1, 6)
+    die2 = random.randint(1, 6)
+
+    # Calculate the sum of the two dice
+    total = die1 + die2
+
+    # Print the result
+    print(f"You rolled a {die1} and a {die2}. Total: {total}")
+
+if __name__ == "__main__":
+    roll_dice() 

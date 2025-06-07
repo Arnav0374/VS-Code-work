@@ -1,0 +1,14 @@
+def main():
+    print("The Ancient Game of Nimm")
+    total_stones = 20
+    which_player = 1
+    while total_stones > 0:
+        print(f"There are {total_stones} stones left.")
+        stones_removed = int(input("Would you like to remove 1 or 2 stones? "))
+        print("")
+        total_stones -= stones_removed
+    print("Game over")
+
+
+if __name__ == "__main__":
+    main()

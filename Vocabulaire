@@ -1,0 +1,135 @@
+import nltk
+from nltk.corpus import words, wordnet
+import random
+import time
+import os
+import sys
+import builtins
+
+from datetime import date
+def has_played_today():
+    save_file = os.path.expanduser("~/.vocabulaire_last_played")
+    today = str(date.today())
+    if os.path.exists(save_file):
+        with open(save_file, "r") as f:
+            last_played = f.read().strip()
+        if last_played == today:
+            print("You've already played today's word! Come back tomorrow.")
+            sys.exit()
+    with open(save_file, "w") as f:
+        f.write(today)
+
+has_played_today()
+
+print("Loading......")
+words_list = words.words()
+nltk_words = [word for word in words_list if len(word) == 5 and wordnet.synsets(word)]
+Game_list = nltk_words
+print("Welcome to Vocabulaire! Play to learn a new word!")
+time.sleep(2)
+print(f"This game contains {len(Game_list)} 5-letter words.")
+time.sleep(2)
+print("One random 'word of the day' will be chosen from these.")
+chosen_word = random.choice(Game_list).lower()
+time.sleep(2)
+print("Your goal is to guess the 5-letter word in 6 tries. Good luck!")
+time.sleep(2)
+print(chosen_word)
+
+chosen_letters = list(chosen_word)
+def main():
+    run_game()
+
+
+def run_game():
+    attempts = 6
+    user_guess = []
+    old_input = builtins.input
+    while user_guess != chosen_word and attempts > 0:
+        print(f"You have {attempts} attempts left.")
+        time.sleep(1)
+        user_guess = old_input("Enter your guess: ").lower()
+        time.sleep(1)
+        if user_guess == "quit":
+            break
+        while len(user_guess) != 5:
+            user_guess = old_input("Please enter a 5-letter word. Try again: ").lower()
+        while user_guess not in Game_list:
+            user_guess = old_input("This word is not in the list. Try again: ").lower()
+        feedback = get_feedback(user_guess, chosen_word)
+        print("Feedback: " + "".join(feedback))
+        attempts -= 1
+        time.sleep(1)
+    game_end(attempts, user_guess)
+    
+
+
+
+def game_end(attempts, user_guess):
+    if user_guess == chosen_word:
+        print(f"Congratulations! You've guessed the word '{chosen_word}' correctly!")
+    elif attempts == 0:
+        print(f"Sorry, you've run out of attempts. The word was '{chosen_word}'. Better luck next time!")
+    elif user_guess == 'quit':
+        print(f"Oop! No worries. The word was {chosen_word}")
+    time.sleep(1)
+    synsets = wordnet.synsets(chosen_word)
+    print("Here is the definition of the word of the day:")
+    time.sleep(1)
+    if synsets:
+        definition = synsets[0].definition()
+        print(definition)
+    else:
+        print(f"We found no definition for the word '{chosen_word}'.")
+    time.sleep(1)
+    update_win_streak(user_guess == chosen_word)
+    time.sleep(1)
+    print("Thank you for playing Vocabulaire! See you next time!")
+
+def update_win_streak(won):
+    streak_file = os.path.expanduser("~/.vocabulaire_win_streak")
+    streak = 0
+    if os.path.exists(streak_file):
+        with open(streak_file, "r") as f:
+            try:
+                streak = int(f.read().strip())
+            except ValueError:
+                streak = 0
+    if won:
+        streak += 1
+        print(f"Your current win streak is: {streak}")
+    else:
+        streak = 0
+        print("Your win streak has been reset to 0.")
+    with open(streak_file, "w") as f:
+        f.write(str(streak))
+        # Improved feedback logic to handle duplicate letters correctly
+
+def get_feedback(user_guess, chosen_word):
+    feedback = ["⬛"] * 5
+    chosen_letters = list(chosen_word)
+    guess_letters = list(user_guess)
+    used = [False] * 5
+    # First pass: mark greens
+    for i in range(5):
+        if guess_letters[i] == chosen_letters[i]:
+            feedback[i] = "🟩"
+            used[i] = True
+
+    # Second pass: mark yellows
+    for i in range(5):
+        if feedback[i] == "🟩":
+            continue
+        for j in range(5):
+            if not used[j] and guess_letters[i] == chosen_letters[j]:
+                feedback[i] = "🟨"
+                used[j] = True
+                break
+    return feedback
+
+        # Patch main() to use get_feedback
+    
+
+
+if __name__ == "__main__":
+    main()
